@@ -74,7 +74,7 @@ function App() {
     const strokeHoles = Array.from({ length: shotsGiven }, (_, i) => i + 1);
     if (strokeHoles.includes(si)) {
       if (shotsTo === 'Red') redScore--;
-      else blueScore--;
+      else if (shotsTo === 'Blue') blueScore--;
     }
 
     if (redScore < blueScore) return game.redName;
