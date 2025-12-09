@@ -42,7 +42,7 @@ function App() {
       shotsTo,
       holes: Array.from({ length: 18 }, (_, i) => ({ hole: i + 1, par: 4, si: i + 1, red: 0, blue: 0 })),
     };
-    setGames([...games, newGame]);
+    setGames(prev => [...prev, newGame]);
     setActiveGameIndex(games.length);
   };
 
@@ -79,27 +79,21 @@ function App() {
   const computeMatchStatus = (game) => {
     let redUp = 0;
     let blueUp = 0;
-    let holesPlayed = 0;
+    let remaining = 18;
 
-    for (const hole of game.holes) {
+    for (let i = 0; i < game.holes.length; i++) {
+      const hole = game.holes[i];
       const result = calculateResult(hole);
-      if (hole.red === 0 && hole.blue === 0) break;
-      holesPlayed++;
       if (result === game.redName) redUp++;
       else if (result === game.blueName) blueUp++;
+
+      const holesLeft = 17 - i;
+      if (redUp > blueUp + holesLeft) return `${game.redName} ${redUp - blueUp}&${holesLeft}`;
+      if (blueUp > redUp + holesLeft) return `${game.blueName} ${blueUp - redUp}&${holesLeft}`;
     }
 
-    const diff = redUp - blueUp;
-    const holesRemaining = 18 - holesPlayed;
-
-    if (diff > holesRemaining) return `${game.redName} ${diff}&${holesRemaining}`;
-    if (-diff > holesRemaining) return `${game.blueName} ${-diff}&${holesRemaining}`;
-    if (holesPlayed === 18) {
-      if (diff === 0) return 'All Square';
-      return diff > 0 ? `${game.redName} 1 Up` : `${game.blueName} 1 Up`;
-    }
-    if (diff > 0) return `${game.redName} ${diff} Up`;
-    if (diff < 0) return `${game.blueName} ${-diff} Up`;
+    if (redUp > blueUp) return `${game.redName} ${redUp - blueUp} Up`;
+    if (blueUp > redUp) return `${game.blueName} ${blueUp - redUp} Up`;
     return 'All Square';
   };
 
@@ -146,10 +140,7 @@ function App() {
               {games[activeGameIndex].holes.map((hole, i) => {
                 const result = calculateResult(hole);
                 return (
-                  <tr key={i} className={
-                    result === games[activeGameIndex].redName ? 'red-win' :
-                    result === games[activeGameIndex].blueName ? 'blue-win' : ''
-                  }>
+                  <tr key={i} className={result === games[activeGameIndex].redName ? 'red-row' : result === games[activeGameIndex].blueName ? 'blue-row' : ''}>
                     <td>{hole.hole}</td>
                     <td><input value={hole.par} onChange={e => {
                       const updated = [...games];
